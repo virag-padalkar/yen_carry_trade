@@ -8,29 +8,30 @@ st.set_page_config(page_title="Yen Unwind Monitor", layout="wide")
 
 # --- 2. SIDEBAR INPUTS ---
 st.sidebar.header("📊 Carry Parameters")
-# April 18, 2026: JGB 10Y default (Institutional focus)
+# Institutional default for April 2026
 jgb_yield = st.sidebar.number_input("Japan 10Y Yield (%)", value=2.41, step=0.01)
 vix_threshold = st.sidebar.slider("VIX Panic Threshold", 15, 30, 22)
 
-# --- 3. DATA FETCHING (NOW WITH LIVE FX) ---
+# --- 3. DATA FETCHING (FIXED FOR WEEKENDS) ---
 @st.cache_data(ttl=3600)
 def get_carry_data():
-    # Added USDPHP=X and USDINR=X for automatic conversion
+    # Tickers for JPY, US 10Y, VIX, and Currency Conversion
     tickers = ['JPY=X', '^TNX', '^VIX', 'USDPHP=X', 'USDINR=X']
     data = yf.download(tickers, period='2y', auto_adjust=True)
     
+    # Handle MultiIndex and select closing prices
     if isinstance(data.columns, pd.MultiIndex):
         df = data['Close'] if 'Close' in data.columns else data['Price']
     else:
         df = data
         
-    # Remove weekend ghost rows and ffill internal gaps
-    df = df.dropna(how='all').ffill()
+    # CRITICAL: Remove rows where core bond/vol data is missing (handles Sat/Sun)
+    df = df.dropna(subset=['^TNX', 'JPY=X', '^VIX']).ffill()
     return df
 
 # --- 4. DASHBOARD HEADER ---
 st.title("🇯🇵 Yen Unwind & Carry Trade Monitor")
-st.markdown(f"**Market Status:** Weekend (Last Update: April 17, 2026) | **Focus:** Monetary Policy Divergence")
+st.markdown(f"**Market Status:** Weekend (Filtered for Friday Close) | **Location:** Pasay City")
 
 try:
     df = get_carry_data()
@@ -57,16 +58,20 @@ try:
     # --- 5. TOP METRICS ---
     c1, c2, c3 = st.columns(3)
     
+    # Metric 1: Yield Spread
     c1.metric("10Y Yield Spread", f"{yield_spread_bps:.0f} bps", 
               delta=f"{yield_spread_bps - 250:.0f} bps vs Threshold", delta_color="inverse")
-    c1.caption("Target: > 250 bps for Carry Stability")
+    c1.caption("Trigger: < 250 bps")
 
+    # Metric 2: USD/JPY Trend
     c2.metric("USD/JPY Spot", f"¥{curr_usdjpy:.2f}", 
               f"{((curr_usdjpy/ma200_usdjpy)-1)*100:.2f}% vs 200MA")
     c2.caption(f"Trend Support: ¥{ma200_usdjpy:.2f}")
 
+    # Metric 3: Volatility
     c3.metric("Volatility (VIX)", f"{curr_vix:.2f}", 
               delta=f"{curr_vix - vix_threshold:.1f} pts", delta_color="inverse")
+    c3.caption(f"Trigger: > {vix_threshold}")
 
     # --- 6. ACTION BANNER ---
     st.divider()
@@ -74,10 +79,13 @@ try:
     
     if active >= 2:
         st.error(f"### ⚡ SIGNAL: SYSTEMIC CARRY UNWIND ({active}/3)")
+        st.write("Massive de-leveraging likely. Focus on JPY appreciation and QQQ downside.")
     elif active == 1:
         st.warning(f"### ⚠️ WARNING: STRUCTURAL STRESS DETECTED ({active}/3)")
+        st.write("Yield spread is compressed. Monitor the USD/JPY 200D MA for a technical break.")
     else:
         st.success("### ✅ STATUS: CARRY TRADE STABLE")
+        st.write("Macro conditions currently favor the carry trade. Liquidity remains intact.")
 
     # --- 7. CANARY GRAPH ---
     st.subheader("USD/JPY Momentum (The Unwind Canary)")
@@ -99,7 +107,7 @@ try:
     col_b.info(f"₹{amt * usd_inr:,.2f}")
 
 except Exception as e:
-    st.error(f"Waiting for data or connection... Error: {e}")
+    st.error(f"Waiting for markets to open or connection issues. Error: {e}")
 
 # --- 9. INSTITUTIONAL LEGEND ---
 st.divider()
@@ -119,8 +127,8 @@ with st.expander("📚 Trigger Definitions & Institutional Action Matrix", expan
         st.markdown("""
         | Active | Regime | Actionable Strategy |
         | :---: | :--- | :--- |
-        | **0** | ✅ **Stable** | Funding remains cheap. Risk-on assets. |
-        | **1** | ⚠️ **Warning** | Tighten stop-losses; monitor BoJ. |
+        | **0** | ✅ **Stable** | Funding remains cheap. Risk-on. |
+        | **1** | ⚠️ **Warning** | Tighten stops on long equity/India. |
         | **2** | ⚡ **Unwind** | **Short Signal.** Liquidate carry assets. |
-        | **3** | 🔥 **Crisis** | Systemic Flight; Expect JPY Spike. |
+        | **3** | 🔥 **Crisis** | Full liquidation. Expect JPY Spike. |
         """)
