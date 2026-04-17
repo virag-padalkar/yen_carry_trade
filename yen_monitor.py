@@ -93,3 +93,26 @@ try:
 
 except Exception as e:
     st.error(f"Data Fetch Error: {e}")
+
+# --- 9. INSTITUTIONAL LEGEND & ACTION MATRIX ---
+    st.divider()
+    with st.expander("📚 Trigger Definitions & Institutional Action Matrix"):
+        st.markdown("### **1. Trigger Definitions**")
+        st.markdown("""
+        | Trigger | Definition | Why it Matters | Threshold |
+        | :--- | :--- | :--- | :--- |
+        | **Yield Pivot** | $Yield_{UST} - Yield_{JGB}$ | The "profit margin" of the trade. If this narrows, the incentive to borrow JPY disappears. | < 250 bps (2.50%) |
+        | **Trend Break** | USD/JPY Spot vs 200-MA | The technical "death cross" for the trade. Indicates a structural move to a stronger Yen. | Spot < 200D MA |
+        | **Volatility Shock**| CBOE VIX Index | High volatility spikes "Value at Risk" (VaR) models, forcing funds to liquidate carry positions. | > 22 |
+        """)
+
+        st.markdown("---")
+        st.markdown("### **2. Action Matrix**")
+        st.markdown("""
+        | Active Triggers | Market Regime | Actionable Intelligence / Strategy |
+        | :---: | :--- | :--- |
+        | **0** | ✅ **Stable Carry** | Risk-on environment. Funding remains cheap. JPY is a reliable funding currency for QQQ/BTC. |
+        | **1** | ⚠️ **Structural Warning** | "The First Crack." Tighten stop-losses on tech/long-equity. Carry traders are starting to eye the exits. |
+        | **2** | ⚡ **Systemic Unwind** | **Short Signal.** High conviction that de-leveraging has begun. Expect massive equity sell-off; Long JPY. |
+        | **3** | 🔥 **Black Swan / Crisis** | Full-scale liquidation. The "correlation of 1" event where all assets fall except the Yen (and perhaps Gold). |
+        """)
