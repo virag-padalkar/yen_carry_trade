@@ -87,13 +87,39 @@ try:
         st.success("### ✅ STATUS: CARRY TRADE STABLE")
         st.write("Macro conditions currently favor the carry trade. Liquidity remains intact.")
 
-    # --- 7. CANARY GRAPH ---
+# --- 7. CANARY GRAPH (FIXED VISIBILITY) ---
     st.subheader("USD/JPY Momentum (The Unwind Canary)")
+    
+    # Calculate the MA as a separate series to ensure it's clean
+    ma200 = df['JPY=X'].rolling(window=200).mean()
+    
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df.index, y=df['JPY=X'], name="Spot Price", line=dict(color='#00FFCC')))
-    fig.add_trace(go.Scatter(x=df.index, y=df['JPY=X'].rolling(window=200).mean(), 
-                             name="200D MA", line=dict(dash='dash', color='white')))
-    fig.update_layout(template="plotly_dark", height=400, margin=dict(l=10,r=10,t=10,b=10))
+    
+    # Spot Price (Cyan)
+    fig.add_trace(go.Scatter(
+        x=df.index, 
+        y=df['JPY=X'], 
+        name="Spot Price", 
+        line=dict(color='#00d4ff', width=2)
+    ))
+    
+    # 200D MA (Changed to Red for visibility)
+    fig.add_trace(go.Scatter(
+        x=df.index, 
+        y=ma200, 
+        name="200D MA", 
+        line=dict(dash='dash', color='#ff4b4b', width=2)
+    ))
+    
+    fig.update_layout(
+        template="plotly_white", # Force white template for clarity in your current view
+        height=450,
+        margin=dict(l=10, r=10, t=10, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(showgrid=True, gridcolor='lightgrey'),
+        yaxis=dict(showgrid=True, gridcolor='lightgrey')
+    )
+    
     st.plotly_chart(fig, use_container_width=True)
 
     # --- 8. AUTOMATIC SIDEBAR TOOLS ---
