@@ -129,6 +129,6 @@ with st.expander("📚 Trigger Definitions & Institutional Action Matrix", expan
         | :---: | :--- | :--- |
         | **0** | ✅ **Stable** | Funding remains cheap. Risk-on. |
         | **1** | ⚠️ **Warning** | Tighten stops on long equity/India. |
-        | **2** | ⚡ **Unwind** | **Short Signal.** Liquidate carry assets. |
-        | **3** | 🔥 **Crisis** | Full liquidation. Expect JPY Spike. |
+        | **2** | ⚡ **Unwind** | **Short Signal.** Liquidate carry assets. Purchase PSQ |
+        | **3** | 🔥 **Crisis** | Full liquidation. Expect JPY Spike. Purchase FXY |
         """)
